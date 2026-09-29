@@ -1,0 +1,74 @@
+# Central configuration for FinRisk.
+# Nothing in src/ should hard-code these values — always read from here.
+
+general:
+  trading_days_per_year: 252
+  random_seed: 42
+
+risk:
+  confidence_level: 0.95       # used for VaR / CVaR
+  var_horizon_days: 1
+  risk_free_rate_annual: 0.02  # documented assumption, overridable
+
+  # thresholds for LOW / MEDIUM / HIGH risk classification
+  # (must be fit/chosen on train+validation data only — never on test)
+  risk_class_thresholds:
+    # ABSOLUTE, outcome-calibrated precision levels (see
+    # docs/SECOND_FORENSIC_AUDIT.md, Issue H4) -- NOT quantiles of the
+    # model's own output distribution. "medium: 0.10" means "MEDIUM" is
+    # the lowest-confidence cutoff at which at least 10% of predictions
+    # this confident or higher were historically followed by a real loss
+    # event; "high: 0.25" means the same at a 25% precision bar. These
+    # values are deliberately modest (not 0.33/0.66) because loss events
+    # are rare by construction (see src/models/targets.py) -- requiring
+    # 33%+ precision from a classifier predicting a ~2-5% base-rate event
+    # would be unreachable in practice and would fall back to the most
+    # conservative possible cutoff every time.
+    medium: 0.10
+    high: 0.25
+
+portfolio:
+  max_weight: 0.30   # NOTE: with N assets you need max_weight * N >= 1.0,
+                      # e.g. 0.30 requires at least 4 assets in the universe.
+                      # optimization.py raises a clear ValueError if this is violated.
+  min_weight: 0.00
+  long_only: true
+
+monte_carlo:
+  number_of_simulations: 10000
+  time_horizon_days: 20
+  confidence_level: 0.95
+  random_seed: 42
+  distribution: empirical      # "empirical" (bootstrap historical returns) or "normal"
+
+backtest:
+  transaction_cost_bps: 10     # 10 basis points = 0.10% per trade
+  rebalance_frequency: monthly
+  execution_lag_days: 1        # signal at close t -> execution at t+1 (no look-ahead)
+
+ml:
+  target_horizon_days: 5
+  # target = 1 if forward 5d portfolio loss <= -loss_threshold
+  loss_threshold: 0.03
+  purge_days: 5                # >= target_horizon_days, prevents train/val overlap leakage
+  embargo_days: 2
+  train_end: "2021-12-31"
+  validation_end: "2023-12-31"
+  # everything after validation_end is TEST and must stay untouched until final eval
+
+stress_scenarios:
+  market_crash:
+    equities: -0.30
+    gold: 0.05
+    bonds: 0.02
+  inflation_shock:
+    equities: -0.15
+    bonds: -0.10
+    gold: 0.15
+  rate_shock:
+    equities: -0.10
+    bonds: -0.15
+    gold: -0.05
+
+data:
+  min_history_days: 252

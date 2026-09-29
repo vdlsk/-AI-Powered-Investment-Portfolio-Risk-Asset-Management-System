@@ -1,0 +1,33 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# data (raw/processed are generated locally, not committed)
+data/raw/*
+data/processed/*
+data/external/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# models
+models/production/*
+models/archive/*
+!models/production/.gitkeep
+!models/archive/.gitkeep
+
+# notebooks checkpoints
+.ipynb_checkpoints/
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/
+
+# streamlit
+.streamlit/secrets.toml

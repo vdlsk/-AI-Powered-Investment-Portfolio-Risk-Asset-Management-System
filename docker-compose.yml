@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: finrisk-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-your_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-finrisk}
+    ports:
+      - "3306:3306"
+    volumes:
+      - finrisk_mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+
+volumes:
+  finrisk_mysql_data:
